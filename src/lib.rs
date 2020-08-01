@@ -1,3 +1,4 @@
+mod vec_attrs;
 mod attr;
 mod command;
 mod command_enum;
@@ -9,13 +10,14 @@ extern crate quote;
 extern crate syn;
 use crate::fields_parse::{impl_parse_args_named, impl_parse_args_unnamed};
 use crate::{
-    attr::{Attr, VecAttrs},
+    attr::{Attr},
     command::Command,
     command_enum::CommandEnum,
 };
 use proc_macro::TokenStream;
 use quote::{quote, ToTokens};
 use syn::{parse_macro_input, DeriveInput, Fields};
+use crate::vec_attrs::VecAttrs;
 
 macro_rules! get_or_return {
     ($($some:tt)*) => {
@@ -45,7 +47,7 @@ pub fn derive_telegram_command_enum(tokens: TokenStream) -> TokenStream {
     for variant in variants.iter() {
         let mut attrs = Vec::new();
         for attr in &variant.attrs {
-            match attr.parse_args::<VecAttrs>() {
+            match attr.parse_args::<VecAttrs<Attr>>() {
                 Ok(mut attrs_) => {
                     attrs.append(attrs_.data.as_mut());
                 }
@@ -174,7 +176,7 @@ fn get_enum_data(input: &DeriveInput) -> Result<&syn::DataEnum, TokenStream> {
 fn parse_attributes(input: &[syn::Attribute]) -> Result<Vec<Attr>, TokenStream> {
     let mut enum_attrs = Vec::new();
     for attr in input.iter() {
-        match attr.parse_args::<VecAttrs>() {
+        match attr.parse_args::<VecAttrs<Attr>>() {
             Ok(mut attrs_) => {
                 enum_attrs.append(attrs_.data.as_mut());
             }
