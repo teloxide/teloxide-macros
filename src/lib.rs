@@ -1,3 +1,4 @@
+mod callback;
 mod transition;
 mod teloxide_attribute;
 mod common;
@@ -61,5 +62,17 @@ pub fn derive_parser_struct(tokens: TokenStream) -> TokenStream {
         Data::Union(_) => return compile_error("Expected struct, found union").into(),
     };
     let res = parser::impl_parser(s, input.ident);
+    res.into()
+}
+
+#[proc_macro_derive(Callback, attributes(callback))]
+pub fn derive_callback_struct(tokens: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(tokens as DeriveInput);
+    let s = match input.data {
+        Data::Struct(ds) => ds,
+        Data::Enum(_) => return compile_error("Expected struct, found enum").into(),
+        Data::Union(_) => return compile_error("Expected struct, found union").into(),
+    };
+    let res = callback::impl_callback(s, input.ident);
     res.into()
 }

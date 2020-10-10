@@ -1,9 +1,7 @@
-﻿use syn::{DataStruct, Field, Fields};
-use syn::punctuated::Punctuated;
-use crate::common::{compile_error, StructField};
+﻿use syn::{DataStruct, Field};
+use crate::common::{compile_error, StructField, get_fields};
 use proc_macro2::{Ident, TokenStream, Span};
 use quote::quote;
-use syn::Token;
 
 pub fn impl_parser(input: DataStruct, ident: Ident) -> TokenStream {
     let parser_field = match find_parser_field(&input) {
@@ -52,12 +50,4 @@ fn find_parser_field(ds: &DataStruct) -> Result<StructField, TokenStream> {
 
 fn is_have_parser_attr(field: &Field) -> bool {
     field.attrs.len() > 0 
-}
-
-fn get_fields(fields: &Fields) -> Result<&Punctuated<Field, Token![,]>, TokenStream> {
-    match fields {
-        Fields::Named(named) => Ok(&named.named),
-        Fields::Unnamed(unnamed) => Ok(&unnamed.unnamed),
-        Fields::Unit => Err(compile_error("Expected struct with fields, found unit struct"))
-    }
 }
