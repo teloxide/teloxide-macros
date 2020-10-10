@@ -1,3 +1,4 @@
+mod generics;
 mod callback;
 mod transition;
 mod teloxide_attribute;
@@ -61,7 +62,7 @@ pub fn derive_parser_struct(tokens: TokenStream) -> TokenStream {
         Data::Enum(_) => return compile_error("Expected struct, found enum").into(),
         Data::Union(_) => return compile_error("Expected struct, found union").into(),
     };
-    let res = parser::impl_parser(s, input.ident);
+    let res = parser::impl_parser(s, input.ident, input.generics);
     res.into()
 }
 
@@ -73,6 +74,6 @@ pub fn derive_callback_struct(tokens: TokenStream) -> TokenStream {
         Data::Enum(_) => return compile_error("Expected struct, found enum").into(),
         Data::Union(_) => return compile_error("Expected struct, found union").into(),
     };
-    let res = callback::impl_callback(s, input.ident);
+    let res = callback::impl_callback(s, input.ident, &input.generics);
     res.into()
 }

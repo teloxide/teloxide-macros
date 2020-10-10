@@ -1,9 +1,10 @@
-﻿use syn::{DataStruct, Field};
+﻿use syn::{DataStruct, Field, Generics};
 use crate::common::{compile_error, StructField, get_fields};
 use proc_macro2::{Ident, TokenStream, Span};
 use quote::quote;
+use crate::generics::{get_impl_block_generics, get_struct_block_generics, get_where_clause};
 
-pub fn impl_callback(input: DataStruct, ident: Ident) -> TokenStream {
+pub fn impl_callback(input: DataStruct, ident: Ident, generics: &Generics) -> TokenStream {
     let callback_field = match find_callback_field(&input) {
         Ok(f) => f,
         Err(s) => return s,
@@ -11,6 +12,9 @@ pub fn impl_callback(input: DataStruct, ident: Ident) -> TokenStream {
 
     let field_type = &callback_field.field.ty;
     let mod_ident = Ident::new(&format!("__private_callback_{}", ident), Span::call_site());
+    let impl_block_generics = get_impl_block_generics(&generics);
+    let struct_block_generics = get_struct_block_generics(&generics);
+    let where_clause = get_where_clause(&generics);
 
     // TODO: add support for generics
     quote! {
@@ -22,7 +26,7 @@ pub fn impl_callback(input: DataStruct, ident: Ident) -> TokenStream {
             use super::#ident;
             
             #[async_trait::async_trait]
-            impl Callback for #ident {
+            impl #impl_block_generics Callback for #ident #struct_block_generics #where_clause {
                 type Update = <#field_type as Callback>::Update;
                 type Err = <#field_type as Callback>::Err;
             
