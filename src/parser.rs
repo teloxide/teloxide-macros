@@ -1,6 +1,6 @@
 use crate::common::{find_1_field_with_attribute};
 use crate::generics::{get_impl_block_generics, get_struct_block_generics, get_where_clause};
-use proc_macro2::{Ident, Span, TokenStream};
+use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 use syn::{DataStruct, Generics};
 
@@ -11,18 +11,15 @@ pub fn impl_parser(input: DataStruct, ident: Ident, generics: Generics) -> Token
     };
 
     let field_type = &parser_field.field.ty;
-    let mod_ident = Ident::new(&format!("__private_parser_{}", ident), Span::call_site());
     let impl_block_generics = get_impl_block_generics(&generics);
     let struct_block_generics = get_struct_block_generics(&generics);
     let where_clause = get_where_clause(&generics);
 
     quote! {
-        #[allow(proc_macro_derive_resolution_fallback)]
-        mod #mod_ident {
+        const _: () = {
             use teloxide::contrib::parser::DataWithUWC;
             use teloxide::prelude::UpdateWithCx;
             use teloxide::contrib::parser::Parser;
-            use super::#ident;
 
             impl #impl_block_generics Parser for #ident #struct_block_generics #where_clause {
                 type Update = <#field_type as Parser>::Update;
@@ -32,6 +29,6 @@ pub fn impl_parser(input: DataStruct, ident: Ident, generics: Generics) -> Token
                     Parser::parse(&self.#parser_field, data)
                 }
             }
-        }
+        };
     }
 }
