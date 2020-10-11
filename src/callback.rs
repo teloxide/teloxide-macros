@@ -1,11 +1,11 @@
-use crate::common::{compile_error, get_fields, StructField};
+use crate::common::{find_1_field_with_attribute};
 use crate::generics::{get_impl_block_generics, get_struct_block_generics, get_where_clause};
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
-use syn::{DataStruct, Field, Generics};
+use syn::{DataStruct, Generics};
 
 pub fn impl_callback(input: DataStruct, ident: Ident, generics: &Generics) -> TokenStream {
-    let callback_field = match find_callback_field(&input) {
+    let callback_field = match find_1_field_with_attribute(&input, "callback") {
         Ok(f) => f,
         Err(s) => return s,
     };
@@ -15,8 +15,7 @@ pub fn impl_callback(input: DataStruct, ident: Ident, generics: &Generics) -> To
     let impl_block_generics = get_impl_block_generics(&generics);
     let struct_block_generics = get_struct_block_generics(&generics);
     let where_clause = get_where_clause(&generics);
-
-    // TODO: add support for generics
+    
     quote! {
         #[allow(proc_macro_derive_resolution_fallback)]
         mod #mod_ident {
@@ -38,25 +37,4 @@ pub fn impl_callback(input: DataStruct, ident: Ident, generics: &Generics) -> To
             }
         }
     }
-}
-
-fn find_callback_field(ds: &DataStruct) -> Result<StructField, TokenStream> {
-    let fields = get_fields(&ds.fields)?;
-    let fields_has_parser = fields
-        .iter()
-        .enumerate()
-        .filter(|(_, f)| is_have_callback_attr(f))
-        .map(|(num, f)| StructField::new(f, num))
-        .collect::<Vec<_>>();
-    match fields_has_parser.as_slice() {
-        [] => Err(compile_error("One field must have `callback` attribute")),
-        [x] => Ok(x.clone()),
-        _ => Err(compile_error(
-            "Only one field must have `callback` attribute",
-        )),
-    }
-}
-
-fn is_have_callback_attr(field: &Field) -> bool {
-    field.attrs.len() > 0
 }

@@ -1,11 +1,11 @@
-use crate::common::{compile_error, get_fields, StructField};
+use crate::common::{find_1_field_with_attribute};
 use crate::generics::{get_impl_block_generics, get_struct_block_generics, get_where_clause};
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
-use syn::{DataStruct, Field, Generics};
+use syn::{DataStruct, Generics};
 
 pub fn impl_parser(input: DataStruct, ident: Ident, generics: Generics) -> TokenStream {
-    let parser_field = match find_parser_field(&input) {
+    let parser_field = match find_1_field_with_attribute(&input, "parser") {
         Ok(f) => f,
         Err(s) => return s,
     };
@@ -34,23 +34,4 @@ pub fn impl_parser(input: DataStruct, ident: Ident, generics: Generics) -> Token
             }
         }
     }
-}
-
-fn find_parser_field(ds: &DataStruct) -> Result<StructField, TokenStream> {
-    let fields = get_fields(&ds.fields)?;
-    let fields_has_parser = fields
-        .iter()
-        .enumerate()
-        .filter(|(_, f)| is_have_parser_attr(f))
-        .map(|(num, f)| StructField::new(f, num))
-        .collect::<Vec<_>>();
-    match fields_has_parser.as_slice() {
-        [] => Err(compile_error("One field must have `parser` attribute")),
-        [x] => Ok(x.clone()),
-        _ => Err(compile_error("Only one field must have `parser` attribute")),
-    }
-}
-
-fn is_have_parser_attr(field: &Field) -> bool {
-    field.attrs.len() > 0
 }

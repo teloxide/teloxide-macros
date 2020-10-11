@@ -169,7 +169,8 @@ fn get_data_and_update_types(arg: &FnArg) -> Result<(&Type, &Type), TokenStream>
 
 fn get_data_and_update_types_in_segment(
     segment: &PathSegment,
-) -> Result<(&Type, &Type), TokenStream> {
+) -> Result<(&Type, &Type), TokenStream> 
+{
     match segment.ident == "DataWithUWC" {
         true => match &segment.arguments {
             PathArguments::AngleBracketed(generics) => {
@@ -188,7 +189,8 @@ fn get_data_and_update_types_in_segment(
 
 fn get_2_types_in_generics<'a>(
     generics: &[&'a GenericArgument],
-) -> Result<(&'a Type, &'a Type), TokenStream> {
+) -> Result<(&'a Type, &'a Type), TokenStream> 
+{
     match generics {
         [data, update] => {
             let data_ty = expect_type(data)?;
