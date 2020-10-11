@@ -1,3 +1,4 @@
+mod view_factory;
 mod callback;
 mod common;
 mod generics;
@@ -75,5 +76,17 @@ pub fn derive_callback_struct(tokens: TokenStream) -> TokenStream {
         Data::Union(_) => return compile_error("Expected struct, found union").into(),
     };
     let res = callback::impl_callback(s, input.ident, &input.generics);
+    res.into()
+}
+
+#[proc_macro_derive(ViewFactory, attributes(view_factory))]
+pub fn derive_view_factory_struct(tokens: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(tokens as DeriveInput);
+    let s = match input.data {
+        Data::Struct(ds) => ds,
+        Data::Enum(_) => return compile_error("Expected struct, found enum").into(),
+        Data::Union(_) => return compile_error("Expected struct, found union").into(),
+    };
+    let res = view_factory::impl_view_factory(s, input.ident, &input.generics);
     res.into()
 }
