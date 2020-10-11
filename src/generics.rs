@@ -1,6 +1,6 @@
-﻿use proc_macro2::{TokenStream};
-use syn::{Generics, GenericParam};
+use proc_macro2::TokenStream;
 use quote::quote;
+use syn::{GenericParam, Generics};
 
 pub fn get_impl_block_generics(generics: &Generics) -> TokenStream {
     let params = &generics.params;
@@ -8,7 +8,7 @@ pub fn get_impl_block_generics(generics: &Generics) -> TokenStream {
         0 => quote!(),
         _ => quote! {
             <#params>
-        }
+        },
     }
 }
 
@@ -25,7 +25,7 @@ pub fn get_struct_block_generics(generics: &Generics) -> TokenStream {
         0 => quote!(),
         _ => quote! {
             <#(#params)*>
-        }
+        },
     }
 }
 

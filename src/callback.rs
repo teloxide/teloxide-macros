@@ -1,8 +1,8 @@
-﻿use syn::{DataStruct, Field, Generics};
-use crate::common::{compile_error, StructField, get_fields};
-use proc_macro2::{Ident, TokenStream, Span};
-use quote::quote;
+use crate::common::{compile_error, get_fields, StructField};
 use crate::generics::{get_impl_block_generics, get_struct_block_generics, get_where_clause};
+use proc_macro2::{Ident, Span, TokenStream};
+use quote::quote;
+use syn::{DataStruct, Field, Generics};
 
 pub fn impl_callback(input: DataStruct, ident: Ident, generics: &Generics) -> TokenStream {
     let callback_field = match find_callback_field(&input) {
@@ -24,14 +24,14 @@ pub fn impl_callback(input: DataStruct, ident: Ident, generics: &Generics) -> To
             use teloxide::prelude::UpdateWithCx;
             use teloxide::contrib::callback::Callback;
             use super::#ident;
-            
+
             #[async_trait::async_trait]
             impl #impl_block_generics Callback for #ident #struct_block_generics #where_clause {
                 type Update = <#field_type as Callback>::Update;
                 type Err = <#field_type as Callback>::Err;
-            
-                async fn try_handle(&self, input: UpdateWithCx<Self::Update>) 
-                    -> Result<Result<(), Self::Err>, UpdateWithCx<Self::Update>> 
+
+                async fn try_handle(&self, input: UpdateWithCx<Self::Update>)
+                    -> Result<Result<(), Self::Err>, UpdateWithCx<Self::Update>>
                 {
                     Callback::try_handle(&self.#callback_field, input).await
                 }
@@ -51,7 +51,9 @@ fn find_callback_field(ds: &DataStruct) -> Result<StructField, TokenStream> {
     match fields_has_parser.as_slice() {
         [] => Err(compile_error("One field must have `callback` attribute")),
         [x] => Ok(x.clone()),
-        _ => Err(compile_error("Only one field must have `callback` attribute")),
+        _ => Err(compile_error(
+            "Only one field must have `callback` attribute",
+        )),
     }
 }
 

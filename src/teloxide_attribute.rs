@@ -1,9 +1,9 @@
-﻿use proc_macro::TokenStream;
-use syn::{FnArg, ReturnType, parse_macro_input, ItemFn, Type};
-use quote::quote;
 use crate::common::compile_error;
 use crate::handler::impl_handler;
+use proc_macro::TokenStream;
+use quote::quote;
 use std::convert::identity;
+use syn::{parse_macro_input, FnArg, ItemFn, ReturnType, Type};
 
 pub fn teloxide(attr: TokenStream, item: TokenStream) -> TokenStream {
     match attr.to_string().as_ref() {
@@ -21,7 +21,7 @@ pub fn teloxide(attr: TokenStream, item: TokenStream) -> TokenStream {
 
             // This is actually used inside the quite! { ... } below.
             #[allow(unused_variables)]
-                let state_type = match params[0] {
+            let state_type = match params[0] {
                 FnArg::Typed(pat_type) => &pat_type.ty,
                 _ => unreachable!(),
             };
@@ -72,8 +72,6 @@ pub fn teloxide(attr: TokenStream, item: TokenStream) -> TokenStream {
             let input = parse_macro_input!(item as ItemFn);
             impl_handler(&input).unwrap_or_else(identity).into()
         }
-        _ => {
-            compile_error(format!("Unrecognised attribute '{}'", attr)).into()
-        }
+        _ => compile_error(format!("Unrecognised attribute '{}'", attr)).into(),
     }
 }

@@ -1,8 +1,8 @@
-﻿use quote::{ToTokens, quote};
 use proc_macro2::TokenStream;
+use quote::{quote, ToTokens};
 
-use syn::{Field, Fields, Token};
 use syn::punctuated::Punctuated;
+use syn::{Field, Fields, Token};
 
 pub fn compile_error<T: ToTokens>(data: T) -> proc_macro2::TokenStream {
     quote! {
@@ -35,6 +35,8 @@ pub fn get_fields(fields: &Fields) -> Result<&Punctuated<Field, Token![,]>, Toke
     match fields {
         Fields::Named(named) => Ok(&named.named),
         Fields::Unnamed(unnamed) => Ok(&unnamed.unnamed),
-        Fields::Unit => Err(compile_error("Expected struct with fields, found unit struct"))
+        Fields::Unit => Err(compile_error(
+            "Expected struct with fields, found unit struct",
+        )),
     }
 }

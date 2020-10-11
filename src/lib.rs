@@ -1,18 +1,18 @@
-mod handler;
-mod generics;
 mod callback;
-mod transition;
-mod teloxide_attribute;
 mod common;
+mod generics;
+mod handler;
 mod parser;
+mod teloxide_attribute;
+mod transition;
 
 extern crate proc_macro;
 extern crate quote;
 extern crate syn;
 
-use proc_macro::TokenStream;
-use syn::{parse_macro_input, DeriveInput, Data};
 use crate::common::compile_error;
+use proc_macro::TokenStream;
+use syn::{parse_macro_input, Data, DeriveInput};
 
 /// The docs is below.
 ///
@@ -53,7 +53,6 @@ pub fn teloxide(attr: TokenStream, item: TokenStream) -> TokenStream {
 pub fn derive_transition(item: TokenStream) -> TokenStream {
     transition::derive_transition(item)
 }
-
 
 #[proc_macro_derive(Parser, attributes(parser))]
 pub fn derive_parser_struct(tokens: TokenStream) -> TokenStream {

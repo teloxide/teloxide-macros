@@ -1,30 +1,29 @@
-﻿use proc_macro::TokenStream;
-use syn::{parse_macro_input, ItemEnum};
-use syn::Fields;
-use std::fmt::Write;
 use crate::quote::ToTokens;
+use proc_macro::TokenStream;
+use std::fmt::Write;
+use syn::Fields;
+use syn::{parse_macro_input, ItemEnum};
 
 pub fn derive_transition(item: TokenStream) -> TokenStream {
     let input = parse_macro_input!(item as ItemEnum);
     let mut dispatch_fn = "".to_owned();
 
     let enum_name = input.ident;
-    let field_type_of_first_variant =
-        match &input.variants.iter().next().unwrap().fields {
-            Fields::Unnamed(fields) => {
-                fields
-                    .unnamed
-                    .iter()
-                    .next()
-                    // .unwrap() because empty enumerations are not yet allowed
-                    // in stable Rust.
-                    .unwrap()
-                    .ty
-                    .to_token_stream()
-                    .to_string()
-            }
-            _ => panic!("Only one unnamed field per variant is allowed"),
-        };
+    let field_type_of_first_variant = match &input.variants.iter().next().unwrap().fields {
+        Fields::Unnamed(fields) => {
+            fields
+                .unnamed
+                .iter()
+                .next()
+                // .unwrap() because empty enumerations are not yet allowed
+                // in stable Rust.
+                .unwrap()
+                .ty
+                .to_token_stream()
+                .to_string()
+        }
+        _ => panic!("Only one unnamed field per variant is allowed"),
+    };
 
     write!(
         dispatch_fn,
@@ -38,7 +37,7 @@ pub fn derive_transition(item: TokenStream) -> TokenStream {
          {{ futures::future::FutureExt::boxed(async move {{ match self {{",
         field_type_of_first_variant, enum_name
     )
-        .unwrap();
+    .unwrap();
 
     for variant in input.variants.iter() {
         write!(
@@ -48,7 +47,7 @@ pub fn derive_transition(item: TokenStream) -> TokenStream {
              aux).await,",
             enum_name, variant.ident
         )
-            .unwrap();
+        .unwrap();
     }
 
     write!(dispatch_fn, "}} }}) }} }}").unwrap();
