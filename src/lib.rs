@@ -1,3 +1,4 @@
+mod handler;
 mod generics;
 mod callback;
 mod transition;

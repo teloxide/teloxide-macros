@@ -1,6 +1,9 @@
 ﻿use proc_macro::TokenStream;
 use syn::{FnArg, ReturnType, parse_macro_input, ItemFn, Type};
 use quote::quote;
+use crate::common::compile_error;
+use crate::handler::impl_handler;
+use std::convert::identity;
 
 pub fn teloxide(attr: TokenStream, item: TokenStream) -> TokenStream {
     match attr.to_string().as_ref() {
@@ -65,8 +68,12 @@ pub fn teloxide(attr: TokenStream, item: TokenStream) -> TokenStream {
 
             impl_transition.into()
         }
+        "handler" => {
+            let input = parse_macro_input!(item as ItemFn);
+            impl_handler(&input).unwrap_or_else(identity).into()
+        }
         _ => {
-            panic!("Unrecognised attribute '{}'", attr);
+            compile_error(format!("Unrecognised attribute '{}'", attr)).into()
         }
     }
 }
