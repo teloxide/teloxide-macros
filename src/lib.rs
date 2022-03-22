@@ -6,6 +6,7 @@ mod command_enum;
 mod dialogue_state;
 mod fields_parse;
 mod rename_rules;
+mod parts;
 
 extern crate proc_macro;
 extern crate quote;
