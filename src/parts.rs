@@ -1,4 +1,4 @@
-/// Parts: Split the input to tokens with the common naming conventions.
+//! Parts: Split the input to tokens with the common naming conventions.
 
 use std::{borrow::Cow, ops::Deref};
 
