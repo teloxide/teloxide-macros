@@ -9,6 +9,10 @@ impl Parts {
     pub fn to_pascalcase(&self) -> String {
         self.iter().fold(String::new(), |mut acc, token| {
             for (idx, c) in token.chars().enumerate() {
+                // We convert the first character of token to uppercase,
+                // then the rest to lowercase. As we've converted all the characters
+                // in token to lowercase (see From::<&str>::from), we just push those
+                // characters to `acc` with no any modification.
                 if idx == 0 {
                     acc.push(c.to_ascii_uppercase());
                 } else {
@@ -22,6 +26,11 @@ impl Parts {
     pub fn to_camelcase(&self) -> String {
         self.iter().enumerate().fold(String::new(), |mut acc, (token_idx, token)| {
             for (c_idx, c) in token.chars().enumerate() {
+                // If the token is not in the first order ("camel" in ["camel", "case"]),
+                // we convert the first character of token to uppercase (["camel", "Case"]), 
+                // then the rest to lowercase. As we've converted all the characters
+                // in token to lowercase (see From::<&str>::from), we just push those
+                // characters to `acc` with no any modification.
                 if token_idx != 0 && c_idx == 0 {
                     acc.push(c.to_ascii_uppercase());
                 } else {
@@ -41,10 +50,14 @@ impl Parts {
     }
 
     pub fn to_screaming_snakecase(&self) -> String {
+        // The logic is just like what to_snakecase() does,
+        // but we convert all the tokens to uppercase first.
         self.iter().map(|s| s.to_uppercase()).collect::<Vec<String>>().join("_")
     }
 
     pub fn to_screaming_kebabcase(&self) -> String {
+        // The logic is just like what to_kebabcase() does,
+        // but we convert all the tokens to uppercase first.
         self.iter().map(|s| s.to_uppercase()).collect::<Vec<String>>().join("-")
     }
 }
