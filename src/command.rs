@@ -38,7 +38,8 @@ impl Command {
         } else {
             "/"
         };
-        if let Some(rule) = &global_parameters.rename_rule {
+        if global_parameters.rename_rule.is_some() && !self.renamed {
+            let rule = global_parameters.rename_rule.as_ref().unwrap();
             String::from(prefix) + &rename_by_rule(&self.name, rule.as_str())
         } else {
             String::from(prefix) + &self.name
@@ -56,7 +57,8 @@ impl Command {
         } else {
             "/"
         };
-        if let Some(rule) = &global_parameters.rename_rule {
+        if global_parameters.rename_rule.is_some() && !self.renamed {
+            let rule = global_parameters.rename_rule.as_ref().unwrap();
             (String::from(prefix), rename_by_rule(&self.name, rule.as_str()))
         } else {
             (String::from(prefix), self.name.clone())
