@@ -118,7 +118,7 @@ fn impl_commands(
     global: &CommandEnum,
 ) -> quote::__private::TokenStream {
     let commands_to_list = infos.iter().filter_map(|command| {
-        if command.description == Some("off".into()) {
+        if command.description == Some("".into()) {
             None
         } else {
             let c = command.get_matched_value(global);
@@ -141,7 +141,7 @@ fn impl_descriptions(
     let command_descriptions = infos.iter().filter_map(|c| {
         let (prefix, command) = c.get_matched_value2(global);
         let description = c.description.clone().unwrap_or_default();
-        (description != "off").then(|| quote! { CommandDescription { prefix: #prefix, command: #command, description: #description } })
+        (description != "").then(|| quote! { CommandDescription { prefix: #prefix, command: #command, description: #description } })
     });
 
     let global_description = match global.description.as_deref() {
