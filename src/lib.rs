@@ -118,13 +118,15 @@ fn impl_commands(
     global: &CommandEnum,
 ) -> quote::__private::TokenStream {
     let commands_to_list = infos.iter().filter_map(|command| {
-        if command.description == Some("".into()) {
-            None
-        } else {
-            let c = command.get_matched_value(global);
-            let d = command.description.as_deref().unwrap_or_default();
-            Some(quote! { BotCommand::new(#c,#d) })
-        }
+        command.description.as_ref().and_then(|description| {
+            if description.is_empty() {
+                None
+            } else {
+                let c = command.get_matched_value(global);
+                let d = command.description.as_deref().unwrap_or_default();
+                Some(quote! { BotCommand::new(#c,#d) })
+            }
+        })
     });
     quote! {
         fn bot_commands() -> Vec<teloxide::types::BotCommand> {
