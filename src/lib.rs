@@ -16,9 +16,11 @@ use crate::{
     command_enum::CommandEnum,
     fields_parse::{impl_parse_args_named, impl_parse_args_unnamed},
 };
+use attr::BotCommandAttribute;
 use proc_macro::TokenStream;
 use quote::{quote, ToTokens};
 use syn::{parse_macro_input, DeriveInput, Fields, ItemEnum};
+use syn::{Lit::Str, Meta::NameValue, MetaNameValue};
 
 #[proc_macro_derive(DialogueState, attributes(handler, handler_out, store))]
 #[deprecated(note = "Use teloxide::handler! instead")]
@@ -58,15 +60,39 @@ pub fn derive_telegram_command_enum(tokens: TokenStream) -> TokenStream {
     for variant in variants.iter() {
         let mut attrs = Vec::new();
         for attr in &variant.attrs {
-            match attr.parse_args::<VecAttrs>() {
-                Ok(mut attrs_) => {
-                    attrs.append(attrs_.data.as_mut());
-                }
-                Err(e) => {
-                    return compile_error(e.to_compile_error());
+            if attr.path.is_ident("doc") {
+                // skip doc attr
+            } else {
+                match attr.parse_args::<VecAttrs>() {
+                    Ok(mut attrs_) => {
+                        attrs.append(attrs_.data.as_mut());
+                    }
+                    Err(e) => {
+                        dbg!(&e);
+                        return compile_error(e.to_compile_error());
+                    }
                 }
             }
         }
+
+        let comment_parts: Vec<_> = variant
+            .attrs
+            .iter()
+            .filter(|attr| attr.path.is_ident("doc"))
+            .filter_map(|attr| {
+                if let Ok(NameValue(MetaNameValue { lit: Str(s), .. })) =
+                    attr.parse_meta()
+                {
+                    Some(s.value())
+                } else {
+                    // non #[doc = "..."] attributes are not our concern
+                    // we leave them for rustc to handle
+                    None
+                }
+            })
+            .collect();
+        let doc = process_doc_comment(comment_parts);
+        attrs.push(Attr { name: BotCommandAttribute::Description, value: doc });
         match Command::try_from(attrs.as_slice(), &variant.ident.to_string()) {
             Ok(command) => variant_infos.push(command),
             Err(e) => return compile_error(e),
@@ -227,4 +253,34 @@ where
     T: ToTokens,
 {
     TokenStream::from(quote! { compile_error!(#data) })
+}
+
+// code from: https://github.com/clap-rs/clap/blob/453356e044db898d6ad4dd4578c2c50583913615/clap_derive/src/utils/doc_comments.rs#L11-L69
+fn process_doc_comment(lines: Vec<String>) -> String {
+    // multiline comments (`/** ... */`) may have LFs (`\n`) in them,
+    // we need to split so we could handle the lines correctly
+    //
+    // we also need to remove leading and trailing blank lines
+    let mut lines: Vec<&str> = lines
+        .iter()
+        .skip_while(|s| is_blank(s))
+        .flat_map(|s| s.split('\n'))
+        .collect();
+
+    while let Some(true) = lines.last().map(|s| is_blank(s)) {
+        lines.pop();
+    }
+
+    // remove one leading space no matter what
+    for line in lines.iter_mut() {
+        if line.starts_with(' ') {
+            *line = &line[1..];
+        }
+    }
+
+    lines.join("/n")
+}
+
+fn is_blank(s: &str) -> bool {
+    s.trim().is_empty()
 }
