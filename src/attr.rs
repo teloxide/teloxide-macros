@@ -26,8 +26,8 @@ impl Parse for BotCommandAttribute {
 }
 
 pub struct Attr {
-    name: BotCommandAttribute,
-    value: String,
+    pub name: BotCommandAttribute,
+    pub value: String,
 }
 
 impl Parse for Attr {
