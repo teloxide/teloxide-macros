@@ -68,7 +68,6 @@ pub fn derive_telegram_command_enum(tokens: TokenStream) -> TokenStream {
                         attrs.append(attrs_.data.as_mut());
                     }
                     Err(e) => {
-                        dbg!(&e);
                         return compile_error(e.to_compile_error());
                     }
                 }
@@ -278,7 +277,7 @@ fn process_doc_comment(lines: Vec<String>) -> String {
         }
     }
 
-    lines.join("/n")
+    lines.join("\n")
 }
 
 fn is_blank(s: &str) -> bool {
